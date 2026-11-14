@@ -16,6 +16,8 @@ env:
 
 jobs:
   publish:
+    # FEL releases include native libraries and are built and signed separately.
+    if: github.repository == 'damontecres/Wholphin'
     runs-on: ubuntu-latest
     permissions:
       contents: write
