@@ -9,6 +9,7 @@ import android.view.Display
 import com.github.damontecres.wholphin.MainActivity
 import com.github.damontecres.wholphin.ui.showToast
 import com.github.damontecres.wholphin.util.WholphinDispatchers
+import com.github.damontecres.wholphin.util.awaitHdmiAudioReconnect
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
@@ -111,6 +112,15 @@ class RefreshRateService
                     Timber.v("Waiting for non-seamless switch")
                     // Wait the recommended 2 seconds (https://developer.android.com/media/optimize/performance/frame-rate)
                     delay(2.seconds)
+                    if (Build.MODEL == "AFTGAZL") {
+                        // The display callback can precede HDMI audio reconnection on Fire OS.
+                        // Preparing now would select PCM and keep it after passthrough returns.
+                        if (awaitHdmiAudioReconnect(context)) {
+                            Timber.i("HDMI audio ready after display change")
+                        } else {
+                            Timber.w("HDMI audio reconnect timed out; continuing with available output")
+                        }
+                    }
                 }
             }
         }

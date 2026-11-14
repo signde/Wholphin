@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.18)
+project(wholphinfel LANGUAGES C CXX)
+set(DVFP_BUILD_TEST OFF CACHE BOOL "" FORCE)
+add_subdirectory(dvfelplay)
+add_library(wholphinfel SHARED wholphinfel.cpp)
+target_compile_features(wholphinfel PRIVATE cxx_std_17)
+target_link_libraries(wholphinfel PRIVATE dvfelplay log)
+target_link_options(wholphinfel PRIVATE -Wl,-z,max-page-size=16384)

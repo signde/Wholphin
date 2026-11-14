@@ -251,7 +251,7 @@ fun CollectionFolderListDetails(
         )
 
         item?.let {
-            QuickDetails(item.ui.quickDetails, null)
+            LibraryMediaDetails(item, null)
         }
 
         OverviewText(

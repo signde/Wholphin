@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name" translatable="false">Wholphin</string>
-    <string name="app_name_long" translatable="false">Wholphin</string>
+    <string name="app_name" translatable="false">Wholphin FEL</string>
+    <string name="app_name_long" translatable="false">Wholphin FEL</string>
 
     <string name="about">About</string>
     <string name="active_recordings">Active Recordings</string>
@@ -987,4 +987,8 @@
     <string name="managed_by_server">Managed by server</string>
     <string name="error">Error</string>
     <string name="dolby_vision_invalid">Invalid Dolby Vision</string>
+    <string name="colored_media_icons">Colored media icons</string>
+    <string name="colored_media_icons_on">Show signde format icons in file details</string>
+    <string name="colored_media_icons_off">Show text format labels</string>
+    <string name="media_flag_versions">%1$d versions</string>
 </resources>

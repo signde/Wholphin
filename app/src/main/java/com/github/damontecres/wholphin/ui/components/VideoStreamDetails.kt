@@ -69,6 +69,10 @@ fun VideoStreamDetails(
     numberOfVersions: Int = 0,
     modifier: Modifier = Modifier,
 ) {
+    if (com.github.damontecres.wholphin.ui.util.LocalInterfaceCustomization.current.coloredMediaIcons) {
+        ColoredMediaStreamDetails(source, videoStream, audioStream, subtitleStream, numberOfVersions, modifier)
+        return
+    }
     val resources = LocalResources.current
     Row(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -96,6 +100,8 @@ fun VideoStreamDetails(
                                 it.videoRange,
                                 it.videoRangeType,
                                 it.videoDoViTitle,
+                                it.dvProfile,
+                                it.comment,
                             )
                         resName.concatWithSpace(range)
                     }

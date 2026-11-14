@@ -48,6 +48,8 @@ object StreamFormatting {
         videoRange: VideoRange?,
         type: VideoRangeType?,
         doviTitle: String?,
+        dvProfile: Int? = null,
+        comment: String? = null,
     ): String? =
         when (videoRange) {
             VideoRange.UNKNOWN,
@@ -58,7 +60,7 @@ object StreamFormatting {
 
             VideoRange.HDR -> {
                 if (doviTitle.isNotNullOrBlank()) {
-                    resources.getString(R.string.dolby_vision)
+                    DolbyVisionLabel.format(resources.getString(R.string.dolby_vision), dvProfile, comment)
                 } else {
                     when (type) {
                         VideoRangeType.UNKNOWN,
@@ -79,7 +81,7 @@ object StreamFormatting {
                         VideoRangeType.DOVI_WITH_EL,
                         VideoRangeType.DOVI_WITH_HDR10_PLUS,
                         VideoRangeType.DOVI_WITH_ELHDR10_PLUS,
-                        -> resources.getString(R.string.dolby_vision)
+                        -> DolbyVisionLabel.format(resources.getString(R.string.dolby_vision), dvProfile, comment)
 
                         VideoRangeType.DOVI_INVALID -> resources.getString(R.string.dolby_vision_invalid)
                     }

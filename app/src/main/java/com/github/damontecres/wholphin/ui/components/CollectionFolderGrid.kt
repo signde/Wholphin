@@ -8,6 +8,7 @@ import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,6 +45,7 @@ import com.github.damontecres.wholphin.ui.detail.CardGrid
 import com.github.damontecres.wholphin.ui.detail.GridItemDetails
 import com.github.damontecres.wholphin.ui.ifElse
 import com.github.damontecres.wholphin.ui.main.HomePageHeader
+import com.github.damontecres.wholphin.ui.util.LocalInterfaceCustomization
 import com.github.damontecres.wholphin.ui.util.ScrollToTopBringIntoViewSpec
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.CollectionType
@@ -75,14 +77,23 @@ fun CollectionFolderViewScope.CollectionFolderGrid(
             val defaultBringIntoViewSpec = LocalBringIntoViewSpec.current
             val density = LocalDensity.current
             AnimatedVisibility(viewOptions.showDetails) {
+                val mediaIcons = LocalInterfaceCustomization.current.coloredMediaIcons
                 HomePageHeader(
                     item = focusedItem,
+                    showMediaFlags = true,
                     showLogo = preferences.appPreferences.interfacePreferences.showLogos,
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .height(200.dp)
-                            .padding(HeaderUtils.padding),
+                            // Keep the details area while leaving room for the focused poster, title and year.
+                            .height(if (mediaIcons) 190.dp else 200.dp)
+                            .padding(
+                                if (mediaIcons) {
+                                    PaddingValues(top = 32.dp, bottom = 8.dp, start = HeaderUtils.startPadding)
+                                } else {
+                                    HeaderUtils.padding
+                                },
+                            ),
                 )
             }
             CardGrid(

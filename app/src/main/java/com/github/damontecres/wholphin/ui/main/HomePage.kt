@@ -68,6 +68,7 @@ import com.github.damontecres.wholphin.ui.components.EpisodeName
 import com.github.damontecres.wholphin.ui.components.ErrorMessage
 import com.github.damontecres.wholphin.ui.components.FocusableItemRow
 import com.github.damontecres.wholphin.ui.components.HeaderUtils
+import com.github.damontecres.wholphin.ui.components.LibraryMediaDetails
 import com.github.damontecres.wholphin.ui.components.LoadingPage
 import com.github.damontecres.wholphin.ui.components.QuickDetails
 import com.github.damontecres.wholphin.ui.components.TitleOrLogo
@@ -85,6 +86,7 @@ import com.github.damontecres.wholphin.ui.playback.playable
 import com.github.damontecres.wholphin.ui.playback.scale
 import com.github.damontecres.wholphin.ui.rememberPosition
 import com.github.damontecres.wholphin.ui.tryRequestFocus
+import com.github.damontecres.wholphin.ui.util.LocalInterfaceCustomization
 import com.github.damontecres.wholphin.ui.util.ScrollToTopBringIntoViewSpec
 import com.github.damontecres.wholphin.util.HomeRowLoadingState
 import com.github.damontecres.wholphin.util.LoadingState
@@ -292,10 +294,21 @@ fun HomePageContent(
     takeFocus: Boolean = true,
     showEmptyRows: Boolean = false,
     headerComposable: @Composable (focusedItem: BaseItem?) -> Unit = { focusedItem ->
+        val mediaIcons = LocalInterfaceCustomization.current.coloredMediaIcons
         HomePageHeader(
             item = focusedItem,
             showLogo = showLogo,
-            modifier = HeaderUtils.modifier,
+            showMediaFlags = true,
+            modifier =
+                Modifier
+                    .padding(
+                        if (mediaIcons) {
+                            // Use the spare header space for badges without cropping the poster row.
+                            PaddingValues(top = HeaderUtils.topPadding, bottom = 8.dp, start = HeaderUtils.startPadding)
+                        } else {
+                            HeaderUtils.padding
+                        },
+                    ).height(HeaderUtils.height + if (mediaIcons) 10.dp else 0.dp),
         )
     },
     onClickViewMore: (RowColumn, HomeRowLoadingState.Success) -> Unit = { _, _ -> },
@@ -543,6 +556,7 @@ fun HomePageHeader(
     item: BaseItem?,
     showLogo: Boolean,
     modifier: Modifier = Modifier,
+    showMediaFlags: Boolean = false,
 ) {
     val isEpisode = item?.type == BaseItemKind.EPISODE
     val title =
@@ -576,6 +590,7 @@ fun HomePageHeader(
         showLogo = showLogo,
         logoImageUrl = rememberLogoUrl(item),
         modifier = modifier,
+        mediaItem = item.takeIf { showMediaFlags },
     )
 }
 
@@ -591,6 +606,7 @@ fun HomePageHeader(
     showLogo: Boolean,
     logoImageUrl: String?,
     modifier: Modifier = Modifier,
+    mediaItem: BaseItem? = null,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -611,7 +627,11 @@ fun HomePageHeader(
             if (subtitle != null) {
                 EpisodeName(subtitle)
             }
-            QuickDetails(quickDetails, timeRemaining, endsAt = endsAt)
+            if (mediaItem != null) {
+                LibraryMediaDetails(mediaItem, timeRemaining)
+            } else {
+                QuickDetails(quickDetails, timeRemaining, endsAt = endsAt)
+            }
             val overviewModifier =
                 Modifier
                     .padding(0.dp)

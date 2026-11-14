@@ -579,6 +579,16 @@ sealed interface AppPreference<Pref, T> {
                 summaryOff = R.string.disabled,
             )
 
+        val ColoredMediaIcons =
+            AppSwitchPreference<AppPreferences>(
+                title = R.string.colored_media_icons,
+                defaultValue = true,
+                getter = { !it.interfacePreferences.hasColoredMediaIcons() || it.interfacePreferences.coloredMediaIcons },
+                setter = { prefs, value -> prefs.updateInterfacePreferences { coloredMediaIcons = value } },
+                summaryOn = R.string.colored_media_icons_on,
+                summaryOff = R.string.colored_media_icons_off,
+            )
+
         val DisplayTogglesPref =
             AppMultiChoicePreference<AppPreferences, DisplayToggle>(
                 title = R.string.display_toggles_title,
@@ -1309,6 +1319,7 @@ val advancedPreferences =
                         AppPreference.ShowClock,
                         AppPreference.BackdropStylePref,
                         AppPreference.ShowLogos,
+                        AppPreference.ColoredMediaIcons,
                         AppPreference.ManageMedia,
                         AppPreference.DisplayTogglesPref,
                         // Temporarily disabled, see https://github.com/damontecres/Wholphin/pull/127#issuecomment-3478058418

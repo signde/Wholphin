@@ -76,6 +76,7 @@ fun createDeviceProfile(
     forceEnabledHdr: Set<String>,
     forceDisabledHdr: Set<String>,
     maxResolution: Int,
+    nativeProfile7: Boolean = false,
 ) = buildDeviceProfile {
     val allowedAudioCodecs =
         when {
@@ -94,6 +95,12 @@ fun createDeviceProfile(
             }
         }
 
+    val nativeP7Types =
+        if (nativeProfile7 && jellyfinTenEleven) {
+            setOf("DOVIWithEL", "DOVIWithELHDR10Plus")
+        } else {
+            emptySet()
+        }
     val supportsHevc = mediaTest.supportsHevc()
     val supportsHevcMain10 = mediaTest.supportsHevcMain10()
     val hevcMainLevel = mediaTest.getHevcMainLevel()
@@ -368,6 +375,24 @@ fun createDeviceProfile(
 
             applyConditions {
                 ProfileConditionValue.VIDEO_PROFILE equals "main 10"
+                if (nativeP7Types.isNotEmpty()) {
+                    ProfileConditionValue.VIDEO_RANGE_TYPE notEquals nativeP7Types.joinToString("|")
+                }
+            }
+        }
+        if (nativeP7Types.isNotEmpty()) {
+            // Cube 3's DV decoder accepts UHD60 (HEVC 5.2), whereas its generic
+            // HEVC decoder advertises 5.1. Keep the exception on the native P7 path.
+            codecProfile {
+                type = CodecType.VIDEO
+                codec = Codec.Video.HEVC
+                conditions {
+                    ProfileConditionValue.VIDEO_LEVEL lowerThanOrEquals maxOf(hevcMain10Level, 156)
+                }
+                applyConditions {
+                    ProfileConditionValue.VIDEO_PROFILE equals "main 10"
+                    ProfileConditionValue.VIDEO_RANGE_TYPE inCollection nativeP7Types
+                }
             }
         }
     }

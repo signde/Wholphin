@@ -39,7 +39,7 @@ object DolbyVisionProfile7Conversion {
         experimental: ExperimentalPreferences,
         mediaTest: MediaCodecCapabilitiesTest,
     ): Boolean =
-        experimental.enabled { convertDolbyVisionProfile7 } &&
+        !FireTvFel.available() && experimental.enabled { convertDolbyVisionProfile7 } &&
             !mediaTest.supportsHevcDolbyVisionEL() &&
             mediaTest.supportsHevcDolbyVisionProfile8()
 
