@@ -10,6 +10,7 @@ import com.github.damontecres.wholphin.preferences.PlaybackOverrides
 import com.github.damontecres.wholphin.preferences.enabled
 import com.github.damontecres.wholphin.preferences.getHdrRangeTypesFor
 import com.github.damontecres.wholphin.util.DolbyVisionProfile7Conversion
+import com.github.damontecres.wholphin.util.FireTvFel
 import com.github.damontecres.wholphin.util.WholphinDispatchers
 import com.github.damontecres.wholphin.util.profile.MediaCodecCapabilitiesTest
 import com.github.damontecres.wholphin.util.profile.createDeviceProfile
@@ -72,8 +73,10 @@ class DeviceProfileService
                                         appPrefs
                                             .getHdrRangeTypesFor(HdrOverrideMode.HDR_OVERRIDE_ENABLE, newConfig.jellyfinTenEleven)
                                             .let(::addAll)
-                                        // A profile 7 track the player converts to 8.1 is one the server need not transcode
-                                        if (DolbyVisionProfile7Conversion.isWanted(newConfig.experimental, mediaCodecCapabilitiesTest)) {
+                                        // Native FEL or the optional P8.1 conversion can accept P7 without server transcoding.
+                                        if (FireTvFel.available() ||
+                                            DolbyVisionProfile7Conversion.isWanted(newConfig.experimental, mediaCodecCapabilitiesTest)
+                                        ) {
                                             HdrFormat.DOVI_PROFILE_7
                                                 .rangeTypeNames(newConfig.jellyfinTenEleven)
                                                 .let(::addAll)
@@ -83,6 +86,7 @@ class DeviceProfileService
                                     appPrefs.getHdrRangeTypesFor(HdrOverrideMode.HDR_OVERRIDE_DISABLE, newConfig.jellyfinTenEleven),
                                 jellyfinTenEleven = newConfig.jellyfinTenEleven,
                                 maxResolution = newConfig.overrides.maxResolution,
+                                nativeProfile7 = FireTvFel.available(),
                             )
                     }
                     this@DeviceProfileService.deviceProfile!!

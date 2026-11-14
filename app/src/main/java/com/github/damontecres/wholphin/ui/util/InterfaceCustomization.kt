@@ -10,6 +10,7 @@ import java.util.EnumSet
  */
 data class InterfaceCustomization(
     val enabledDisplayToggles: EnumSet<DisplayToggle>,
+    val coloredMediaIcons: Boolean = true,
 ) {
     constructor(prefs: AppPreferences) : this(
         prefs.interfacePreferences.displayTogglesList.let {
@@ -19,6 +20,7 @@ data class InterfaceCustomization(
                 EnumSet.copyOf(it)
             }
         },
+        !prefs.interfacePreferences.hasColoredMediaIcons() || prefs.interfacePreferences.coloredMediaIcons,
     )
 }
 

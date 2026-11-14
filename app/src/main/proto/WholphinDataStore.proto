@@ -211,6 +211,7 @@ message InterfacePreferences {
   bool show_logos = 13;
   SearchPreferences search_preferences = 14;
   repeated DisplayToggle display_toggles = 15;
+  optional bool colored_media_icons = 16;
 }
 
 message AdvancedPreferences {

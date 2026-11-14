@@ -18,7 +18,9 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.Renderer
 import androidx.media3.exoplayer.RenderersFactory
+import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
+import androidx.media3.exoplayer.mediacodec.SynchronousMediaCodecAdapter
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.video.MediaCodecVideoRenderer
@@ -26,6 +28,7 @@ import androidx.media3.exoplayer.video.VideoRendererEventListener
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.ExtractorsFactory
 import androidx.media3.session.MediaSession
+import com.github.damontecres.wholphin.BuildConfig
 import com.github.damontecres.wholphin.mpv.MpvPlayer
 import com.github.damontecres.wholphin.preferences.AppPreferences
 import com.github.damontecres.wholphin.preferences.AssPlaybackMode
@@ -38,6 +41,10 @@ import com.github.damontecres.wholphin.util.BitstreamFilteringCodecAdapterFactor
 import com.github.damontecres.wholphin.util.DolbyVisionProfile7Conversion
 import com.github.damontecres.wholphin.util.DolbyVisionProfile7ExtractorsFactory
 import com.github.damontecres.wholphin.util.DolbyVisionProfile7Filter
+import com.github.damontecres.wholphin.util.FireTvFel
+import com.github.damontecres.wholphin.util.FireTvFelAnalyticsListener
+import com.github.damontecres.wholphin.util.FireTvFelCodecAdapterFactory
+import com.github.damontecres.wholphin.util.HdmiReconnectAudioSink
 import com.github.damontecres.wholphin.util.Hdr10PlusMaskingFilter
 import com.github.damontecres.wholphin.util.WholphinDispatchers
 import com.google.common.util.concurrent.Futures
@@ -167,7 +174,7 @@ class PlayerFactory
                             appPreferences.experimentalPreferences.get { videoTunnelingEnabled }
                         val trackSelector =
                             createTrackSelector(
-                                tunneling = tunneling,
+                                tunneling = if (FireTvFel.available()) false else tunneling,
                                 disableAudioOffload = disableAudioOffload,
                             )
 
@@ -178,6 +185,9 @@ class PlayerFactory
                             .setTrackSelector(trackSelector)
                             .build()
                             .apply {
+                                if (BuildConfig.DEBUG && FireTvFel.available()) {
+                                    addAnalyticsListener(FireTvFelAnalyticsListener())
+                                }
                                 assHandler?.init(this)
                                 withContext(WholphinDispatchers.Main) {
                                     setAudioAttributes(
@@ -315,6 +325,16 @@ class WholphinRenderersFactory(
     private val preferDolbyVisionOverHdr10Plus: Boolean = false,
     private val convertDolbyVisionProfile7: Boolean = false,
 ) : DefaultRenderersFactory(context) {
+    override fun buildAudioSink(
+        context: Context,
+        enableFloatOutput: Boolean,
+        enableAudioOutputPlaybackParams: Boolean,
+    ): AudioSink? {
+        val isCube3 = Build.MODEL == "AFTGAZL"
+        val sink = super.buildAudioSink(context, enableFloatOutput || isCube3, enableAudioOutputPlaybackParams) ?: return null
+        return if (isCube3) HdmiReconnectAudioSink(sink, context) else sink
+    }
+
     @OptIn(ExperimentalApi::class)
     override fun buildVideoRenderers(
         context: Context,
@@ -333,16 +353,19 @@ class WholphinRenderersFactory(
                 if (convertDolbyVisionProfile7) add(DolbyVisionProfile7Filter())
                 if (preferDolbyVisionOverHdr10Plus) add(Hdr10PlusMaskingFilter())
             }
+        // FEL pairing is committed only after the BL has actually entered MediaCodec.
+        val baseVideoFactory =
+            if (FireTvFel.available()) SynchronousMediaCodecAdapter.Factory() else codecAdapterFactory
         val videoCodecAdapterFactory =
             if (bitstreamFilters.isNotEmpty()) {
-                BitstreamFilteringCodecAdapterFactory(codecAdapterFactory, bitstreamFilters)
+                BitstreamFilteringCodecAdapterFactory(baseVideoFactory, bitstreamFilters)
             } else {
-                codecAdapterFactory
+                baseVideoFactory
             }
         var videoRendererBuilder =
             MediaCodecVideoRenderer
                 .Builder(context)
-                .setCodecAdapterFactory(videoCodecAdapterFactory)
+                .setCodecAdapterFactory(FireTvFelCodecAdapterFactory(videoCodecAdapterFactory))
                 .setMediaCodecSelector(mediaCodecSelector)
                 .setAllowedJoiningTimeMs(allowedVideoJoiningTimeMs)
                 .setEnableDecoderFallback(enableDecoderFallback)
