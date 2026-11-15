@@ -74,6 +74,32 @@ class VersionCompareTests {
     }
 
     @Test
+    fun testFelReleaseVersion() {
+        Assert.assertEquals(Version(1, 1, 1), Version.fromString("v1.1.1-fel"))
+        Assert.assertEquals(
+            Version(1, 1, 1, 0, "85261900"),
+            Version.fromString("1.1.1-fel-0-g85261900"),
+        )
+    }
+
+    @Test
+    fun testFelVersionsPreserveMigrationThresholds() {
+        val fel = Version.fromString("1.1.1-fel-3-gabc1234")
+        val upstream = Version.fromString("1.1.1-3-gabc1234")
+        Assert.assertEquals(upstream, fel)
+        Assert.assertTrue(fel.isGreaterThan(Version.fromString("1.0.10")))
+        Assert.assertTrue(fel.isEqualOrBefore(Version.fromString("1.1.2")))
+        Assert.assertTrue(fel.isGreaterThan(Version.fromString("1.1.1-fel-2-gabc1234")))
+    }
+
+    @Test
+    fun testInvalidFelVersionsRemainInvalid() {
+        for (version in listOf("1.1.1-felgarbage", "1.1.1-fel-abc-g123", "1.1.1-fel-2", "1.1.1-fel-fel")) {
+            Assert.assertNull(Version.tryFromString(version))
+        }
+    }
+
+    @Test
     fun testToString() {
         Assert.assertEquals("v0.2.0", V_0_2_0.toString())
         Assert.assertEquals("v0.2.0", V_0_2_0_0.toString())
