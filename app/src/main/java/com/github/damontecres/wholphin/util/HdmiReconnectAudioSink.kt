@@ -10,6 +10,7 @@ import android.media.AudioManager
 import android.os.SystemClock
 import androidx.annotation.OptIn
 import androidx.core.content.ContextCompat
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.audio.ForwardingAudioSink
@@ -24,6 +25,7 @@ internal class HdmiReconnectAudioSink(
     @Volatile private var connected = true
     private var waitingSince = -1L
     private var registered = true
+    private var initializationFailureSince = -1L
     private val receiver =
         object : BroadcastReceiver() {
             override fun onReceive(
@@ -63,10 +65,32 @@ internal class HdmiReconnectAudioSink(
             Timber.i("HDMI reconnected; submitting queued audio")
             waitingSince = -1L
         }
-        return super.handleBuffer(buffer, presentationTimeUs, encodedAccessUnitCount)
+        return try {
+            super.handleBuffer(buffer, presentationTimeUs, encodedAccessUnitCount).also { handled ->
+                if (handled) initializationFailureSince = -1L
+            }
+        } catch (error: AudioSink.InitializationException) {
+            val mimeType = error.format.sampleMimeType
+            if (mimeType != MimeTypes.AUDIO_TRUEHD && mimeType != MimeTypes.AUDIO_DTS_HD) throw error
+            val now = SystemClock.elapsedRealtime()
+            if (initializationFailureSince == -1L) {
+                initializationFailureSince = now
+                Timber.i("Waiting for the previous lossless audio output to close")
+            }
+            if (now - initializationFailureSince >= 5000) throw error
+            // Fire OS may keep the old direct output reserved after AudioTrack.release().
+            // Retain this buffer until the fresh session can open, without restarting playback.
+            false
+        }
+    }
+
+    override fun flush() {
+        initializationFailureSince = -1L
+        super.flush()
     }
 
     override fun reset() {
+        initializationFailureSince = -1L
         waitingSince = -1L
         super.reset()
     }

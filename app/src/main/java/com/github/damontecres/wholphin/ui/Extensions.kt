@@ -202,10 +202,10 @@ fun Modifier.enableMarquee(focused: Boolean) =
 
 @Composable
 fun Modifier.playSoundOnFocus(enabled: Boolean): Modifier {
-    if (!enabled) {
+    val context = LocalContext.current
+    if (!enabled || !context.uiSoundEffectsEnabled()) {
         return this
     }
-    val context = LocalContext.current
     val audioManager =
         remember {
             context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -221,8 +221,19 @@ fun playOnClickSound(
     context: Context,
     effectType: Int = AudioManager.FX_KEY_CLICK,
 ) {
+    if (!context.uiSoundEffectsEnabled()) return
     val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     audioManager.playSoundEffect(effectType)
+}
+
+// Explicit AudioManager calls bypass View.soundEffectsEnabled; honor the same theme policy.
+internal fun Context.uiSoundEffectsEnabled(): Boolean {
+    val attributes = obtainStyledAttributes(intArrayOf(android.R.attr.soundEffectsEnabled))
+    return try {
+        attributes.getBoolean(0, true)
+    } finally {
+        attributes.recycle()
+    }
 }
 
 /**

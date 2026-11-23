@@ -36,12 +36,12 @@ fun ColoredMediaStreamDetails(
     modifier: Modifier = Modifier,
 ) {
     val flags =
-        remember(source?.videoType, video, audio) {
-            MediaFlags.video(video) + listOfNotNull(MediaFlags.source(source)) + MediaFlags.audio(audio)
+        remember(source, video, audio) {
+            listOfNotNull(MediaFlags.source(source, video)) + MediaFlags.video(video) + MediaFlags.audio(audio)
         }
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = modifier) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = modifier) {
         FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
             itemVerticalAlignment = Alignment.CenterVertically,
         ) {
@@ -54,7 +54,7 @@ fun ColoredMediaStreamDetails(
                         painter = painterResource(resource),
                         contentDescription = flag.label,
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.width(64.dp).height(43.dp),
+                        modifier = Modifier.width(44.dp).height(44.dp * 43 / 64),
                     )
                 }
             }

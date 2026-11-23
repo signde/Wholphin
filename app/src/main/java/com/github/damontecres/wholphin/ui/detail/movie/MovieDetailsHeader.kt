@@ -29,6 +29,7 @@ import com.github.damontecres.wholphin.ui.components.TitleOrLogo
 import com.github.damontecres.wholphin.ui.components.VideoStreamDetails
 import com.github.damontecres.wholphin.ui.isNotNullOrBlank
 import com.github.damontecres.wholphin.ui.letNotEmpty
+import com.github.damontecres.wholphin.ui.util.LocalInterfaceCustomization
 import com.github.damontecres.wholphin.util.ExceptionHandler
 import kotlinx.coroutines.launch
 import org.jellyfin.sdk.model.api.PersonKind
@@ -79,7 +80,7 @@ fun MovieDetailsHeader(
                 modifier =
                     Modifier.padding(
                         start = HeaderUtils.startPadding,
-                        top = 4.dp,
+                        top = if (LocalInterfaceCustomization.current.coloredMediaIcons) 0.dp else 4.dp,
                         bottom = 16.dp,
                     ),
             )

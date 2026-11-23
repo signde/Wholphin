@@ -2,5 +2,7 @@
 
     <style name="Theme.Wholphin" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:colorBackground">@android:color/background_dark</item>
+        <!-- Navigation sounds can interrupt compressed HDMI audio on Fire TV. -->
+        <item name="android:soundEffectsEnabled">false</item>
     </style>
 </resources>

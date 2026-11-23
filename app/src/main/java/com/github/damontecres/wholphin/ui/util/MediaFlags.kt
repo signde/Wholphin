@@ -3,6 +3,8 @@ package com.github.damontecres.wholphin.ui.util
 import org.jellyfin.sdk.model.api.AudioSpatialFormat
 import org.jellyfin.sdk.model.api.MediaSourceInfo
 import org.jellyfin.sdk.model.api.MediaStream
+import org.jellyfin.sdk.model.api.VideoType
+import java.util.Locale
 import kotlin.math.abs
 
 /** A source-format badge, not a claim about the connected display or speaker layout. */
@@ -73,12 +75,44 @@ object MediaFlags {
             }
         }
 
-    fun source(source: MediaSourceInfo?): MediaFlag? =
-        when (source?.videoType?.name) {
-            "BLURAY" -> flag("source/bluray", "Blu-ray")
-            "DVD" -> flag("source/dvd", "DVD")
-            else -> null // MKV/MP4 does not identify disc, remux, or streaming provenance.
+    fun source(
+        source: MediaSourceInfo?,
+        video: MediaStream? = null,
+        itemPath: String? = null,
+    ): MediaFlag? {
+        // Match AF3's Image_Furniture_SourceQuality rules against the full file path.
+        // A selected version's path takes precedence over the library item's default path.
+        val path = (source?.path?.takeIf { it.isNotBlank() } ?: itemPath).orEmpty().lowercase(Locale.ROOT)
+        fun containsAny(vararg markers: String) = markers.any { path.contains(it) }
+        val is4k =
+            containsAny("4k", "2160p", "uhd", "ultrahd", "ultra hd") ||
+                video?.let {
+                    val width = it.width
+                    val height = it.height
+                    width != null && height != null &&
+                        StreamFormatting.resolutionString(width, height, it.isInterlaced) == "4K"
+                } == true
+        // Keep Jellyfin's explicit disc type when available.
+        when (source?.videoType) {
+            VideoType.BLU_RAY -> return if (is4k) flag("source/ultrahd", "UHD Blu-ray") else flag("source/bluray", "Blu-ray")
+            VideoType.DVD -> return flag("source/dvd", "DVD")
+            else -> Unit
         }
+        // Order matters: UHD disc before web, HD DVD before generic DVD, and SDTV before HDTV.
+        return when {
+            is4k && containsAny("remux", "blu-ray", "bluray", "bdrip", "brrip", "bdmv", "bd66", "bd100") ->
+                flag("source/ultrahd", "UHD Blu-ray")
+            containsAny("webtv", "web-tv") -> flag("source/webtv", "Web TV")
+            containsAny("web-dl", "webdl", "webrip", "web-rip") -> flag("source/web-dl", "WEB-DL / WEBRip")
+            containsAny("hddvd", "hd-dvd", "hd dvd") -> flag("source/hddvd", "HD DVD")
+            containsAny("remux", "blu-ray", "bluray", "bdrip", "brrip", "bd25", "bd50", "bdmv") ->
+                flag("source/bluray", "Blu-ray")
+            containsAny("dvd") || path.endsWith(".ifo") || path.endsWith(".iso") -> flag("source/dvd", "DVD")
+            containsAny("sdtv", "sd-tv", "pdtv") -> flag("source/sdtv", "SDTV")
+            containsAny("hdtv", "dsr") -> flag("source/hdtv", "HDTV")
+            else -> null
+        }
+    }
 
     fun audio(stream: MediaStream?): List<MediaFlag> =
         buildList {

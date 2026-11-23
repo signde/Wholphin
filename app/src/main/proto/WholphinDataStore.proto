@@ -94,6 +94,9 @@ message PlaybackPreferences {
   string external_player = 24;
   bool cinema_mode = 25;
   DpadSeekMode dpad_seek_mode = 26;
+  // Retired app-level audio offset. Do not reuse its stored field.
+  reserved 27;
+  reserved "audio_offset_ms";
 }
 
 enum DpadSeekMode {

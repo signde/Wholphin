@@ -80,7 +80,7 @@ fun LibraryMediaDetails(
             val video = streams.firstOrNull { it.type == MediaStreamType.VIDEO }
             val audioStreams = streams.filter { it.type == MediaStreamType.AUDIO }
             val audio = audioStreams.firstOrNull { it.isDefault } ?: audioStreams.firstOrNull()
-            (MediaFlags.video(video) + listOfNotNull(MediaFlags.source(source)) + MediaFlags.audio(audio))
+            (listOfNotNull(MediaFlags.source(source, video, current?.path)) + MediaFlags.video(video) + MediaFlags.audio(audio))
                 .mapNotNull { flag -> flag.artwork?.let(mediaFlagResources::get)?.let { it to flag.label } }
         }
     Column(verticalArrangement = Arrangement.spacedBy(3.dp), modifier = modifier) {

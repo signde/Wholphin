@@ -19,6 +19,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.Renderer
 import androidx.media3.exoplayer.RenderersFactory
 import androidx.media3.exoplayer.audio.AudioSink
+import androidx.media3.exoplayer.audio.AudioTrackAudioOutputProvider
+import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.mediacodec.SynchronousMediaCodecAdapter
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -38,6 +40,8 @@ import com.github.damontecres.wholphin.preferences.get
 import com.github.damontecres.wholphin.services.hilt.AuthOkHttpClient
 import com.github.damontecres.wholphin.util.BitstreamFilter
 import com.github.damontecres.wholphin.util.BitstreamFilteringCodecAdapterFactory
+import com.github.damontecres.wholphin.util.CubeAudioOutputProvider
+import com.github.damontecres.wholphin.util.CubeAudioTrackBufferSizeProvider
 import com.github.damontecres.wholphin.util.DolbyVisionProfile7Conversion
 import com.github.damontecres.wholphin.util.DolbyVisionProfile7ExtractorsFactory
 import com.github.damontecres.wholphin.util.DolbyVisionProfile7Filter
@@ -174,6 +178,7 @@ class PlayerFactory
                             appPreferences.experimentalPreferences.get { videoTunnelingEnabled }
                         val trackSelector =
                             createTrackSelector(
+                                // Native FEL requires app-controlled video scheduling.
                                 tunneling = if (FireTvFel.available()) false else tunneling,
                                 disableAudioOffload = disableAudioOffload,
                             )
@@ -331,8 +336,20 @@ class WholphinRenderersFactory(
         enableAudioOutputPlaybackParams: Boolean,
     ): AudioSink? {
         val isCube3 = Build.MODEL == "AFTGAZL"
-        val sink = super.buildAudioSink(context, enableFloatOutput || isCube3, enableAudioOutputPlaybackParams) ?: return null
-        return if (isCube3) HdmiReconnectAudioSink(sink, context) else sink
+        if (!isCube3) return super.buildAudioSink(context, enableFloatOutput, enableAudioOutputPlaybackParams)
+        val outputProvider =
+            AudioTrackAudioOutputProvider
+                .Builder(context)
+                .setAudioTrackBufferSizeProvider(CubeAudioTrackBufferSizeProvider())
+                .build()
+        val sink =
+            DefaultAudioSink
+                .Builder(context)
+                .setEnableFloatOutput(true)
+                .setEnableAudioOutputPlaybackParameters(enableAudioOutputPlaybackParams)
+                .setAudioOutputProvider(CubeAudioOutputProvider(outputProvider))
+                .build()
+        return HdmiReconnectAudioSink(sink, context)
     }
 
     @OptIn(ExperimentalApi::class)

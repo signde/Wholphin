@@ -8,6 +8,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
 import androidx.annotation.OptIn
+import androidx.media3.common.Format
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.audio.AudioSink
 import io.mockk.every
@@ -72,6 +74,64 @@ class HdmiReconnectAudioSinkTest {
         assertFalse(sink.handleBuffer(buffer, 1234L, 1))
         ShadowSystemClock.advanceBy(Duration.ofSeconds(6))
         assertTrue(sink.handleBuffer(buffer, 1234L, 1))
+        sink.release()
+    }
+
+    @Test
+    fun retainsLosslessBufferWhileOldOutputCloses() {
+        val sink = create(true)
+        for (mime in listOf(MimeTypes.AUDIO_TRUEHD, MimeTypes.AUDIO_DTS_HD)) {
+            sink.flush()
+            val failure =
+                AudioSink.InitializationException(
+                    "Output still reserved",
+                    0,
+                    Format.Builder().setSampleMimeType(mime).build(),
+                    false,
+                    null,
+                )
+            every { delegate.handleBuffer(buffer, 1234L, 1) } throws failure
+            assertFalse(sink.handleBuffer(buffer, 1234L, 1))
+            ShadowSystemClock.advanceBy(Duration.ofSeconds(2))
+            assertFalse(sink.handleBuffer(buffer, 1234L, 1))
+            assertEquals(0, buffer.position())
+            every { delegate.handleBuffer(buffer, 1234L, 1) } returns true
+            assertTrue(sink.handleBuffer(buffer, 1234L, 1))
+        }
+        sink.release()
+    }
+
+    @Test
+    fun persistentLosslessInitializationFailureIsReported() {
+        val sink = create(true)
+        val failure =
+            AudioSink.InitializationException(
+                "Output unavailable",
+                0,
+                Format.Builder().setSampleMimeType(MimeTypes.AUDIO_TRUEHD).build(),
+                false,
+                null,
+            )
+        every { delegate.handleBuffer(buffer, 1234L, 1) } throws failure
+        assertFalse(sink.handleBuffer(buffer, 1234L, 1))
+        ShadowSystemClock.advanceBy(Duration.ofSeconds(5))
+        org.junit.Assert.assertThrows(AudioSink.InitializationException::class.java) { sink.handleBuffer(buffer, 1234L, 1) }
+        sink.release()
+    }
+
+    @Test
+    fun otherCodecFailuresAreNotRetried() {
+        val sink = create(true)
+        val failure =
+            AudioSink.InitializationException(
+                "Output unavailable",
+                0,
+                Format.Builder().setSampleMimeType(MimeTypes.AUDIO_E_AC3).build(),
+                false,
+                null,
+            )
+        every { delegate.handleBuffer(buffer, 1234L, 1) } throws failure
+        org.junit.Assert.assertThrows(AudioSink.InitializationException::class.java) { sink.handleBuffer(buffer, 1234L, 1) }
         sink.release()
     }
 }

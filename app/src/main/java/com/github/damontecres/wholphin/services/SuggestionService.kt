@@ -164,7 +164,7 @@ class SuggestionService
             val request =
                 GetItemsRequest(
                     ids = ids,
-                    fields = listOf(ItemFields.PRIMARY_IMAGE_ASPECT_RATIO, ItemFields.OVERVIEW, ItemFields.MEDIA_STREAMS),
+                    fields = listOf(ItemFields.PRIMARY_IMAGE_ASPECT_RATIO, ItemFields.OVERVIEW, ItemFields.MEDIA_STREAMS, ItemFields.PATH),
                 )
             return GetItemsRequestHandler
                 .execute(api, request)

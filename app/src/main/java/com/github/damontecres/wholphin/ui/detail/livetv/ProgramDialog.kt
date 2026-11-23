@@ -27,11 +27,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import androidx.tv.material3.surfaceColorAtElevation
+import com.github.damontecres.wholphin.ui.SilentDialog
 import com.github.damontecres.wholphin.R
 import com.github.damontecres.wholphin.data.model.BaseItem
 import com.github.damontecres.wholphin.ui.components.CircularProgress
@@ -55,7 +55,7 @@ fun ProgramDialog(
     onCancelRecord: (BaseItem, series: Boolean) -> Unit,
 ) {
     val context = LocalContext.current
-    Dialog(
+    SilentDialog(
         onDismissRequest = onDismissRequest,
     ) {
         val focusRequester = remember { FocusRequester() }

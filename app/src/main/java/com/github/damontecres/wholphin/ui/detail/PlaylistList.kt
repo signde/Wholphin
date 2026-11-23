@@ -45,7 +45,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.tv.material3.Icon
@@ -53,6 +52,7 @@ import androidx.tv.material3.ListItem
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import androidx.tv.material3.surfaceColorAtElevation
+import com.github.damontecres.wholphin.ui.SilentDialog
 import com.github.damontecres.wholphin.R
 import com.github.damontecres.wholphin.data.model.PlaylistInfo
 import com.github.damontecres.wholphin.ui.components.BasicDialog
@@ -237,7 +237,7 @@ fun PlaylistDialog(
         }
     }
 
-    Dialog(
+    SilentDialog(
         onDismissRequest = onDismissRequest,
     ) {
         val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider

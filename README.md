@@ -8,8 +8,10 @@ Profile 7 FEL and MEL playback on Fire TV Cube 3 using the Fire TV AV Magisk mod
 
 - Hardware Profile 7 FEL processing through ExoPlayer, with separate base-layer
   and enhancement-layer decoding. FEL and MEL keep their original Profile 7 metadata.
-- HDMI audio reconnect handling for TrueHD passthrough during refresh-rate and
-  Dolby Vision transitions, plus local FFmpeg audio decoding when needed.
+- HDMI audio reconnect handling during refresh-rate and Dolby Vision transitions,
+  plus local FFmpeg audio decoding when needed.
+- TrueHD and DTS-HD seek recovery on Cube 3, with fresh audio sessions to avoid
+  stale playback counters and smaller DTS-HD buffers to prevent allocation failures.
 - Dolby Vision profile and FEL/MEL labels from Jellyfin metadata.
 - Signde’s colored media icons in title details, Recommended rows, and library
   views with **Show details** enabled. The **Colored media icons** option is on by
@@ -24,11 +26,10 @@ The plugin is not required for FEL playback.
 
 - Fire TV Cube 3 (Gazelle), rooted with Magisk and a compatible
   [Fire TV AV module](https://github.com/signde/firetv-passthrough/releases).
-  The released FEL module supports Fire OS **7.7.0.2 (PS7702.4965N)** and
-  **7.7.1.7 (PS7717.5741N)**. Check the module’s compatibility list before installing.
+  Check your exact firmware build against the [supported firmware list](https://github.com/signde/firetv-passthrough/blob/v0.2.4/README.md#supported-firmware).
 - A Dolby Vision-capable display. Lossless audio passthrough also requires a
   compatible HDMI audio system.
-- Jellyfin server **12.4.0** for this initial release. Other server versions have
+- Jellyfin server **12.4.0** used for testing. Other server versions have
   not been validated with this fork.
 
 Native FEL support is for Cube 3 only. The Fire TV Stick 4K Max 2 is not supported

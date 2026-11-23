@@ -3,10 +3,12 @@ package com.github.damontecres.wholphin.ui.util
 import com.github.damontecres.wholphin.preferences.AppPreference
 import com.github.damontecres.wholphin.preferences.AppPreferences
 import com.github.damontecres.wholphin.preferences.InterfacePreferences
+import com.github.damontecres.wholphin.test.TestTracks
 import org.jellyfin.sdk.model.api.AudioSpatialFormat
 import org.jellyfin.sdk.model.api.MediaStream
 import org.jellyfin.sdk.model.api.MediaStreamType
 import org.jellyfin.sdk.model.api.VideoRangeType
+import org.jellyfin.sdk.model.api.VideoType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -94,4 +96,80 @@ class MediaFlagsTest {
         assertFalse(AppPreference.ColoredMediaIcons.getter(disabled))
         assertFalse(InterfaceCustomization(AppPreferences.parseFrom(disabled.toByteArray())).coloredMediaIcons)
     }
+
+    @Test fun sourceQualityUsesAf3TagsAndArtwork() {
+        val cases =
+            mapOf(
+                "WEB-DL" to "web-dl",
+                "webdl" to "web-dl",
+                "WEBRip" to "web-dl",
+                "web-rip" to "web-dl",
+                "WebTV" to "webtv",
+                "web-tv" to "webtv",
+                "BluRay" to "bluray",
+                "blu-ray" to "bluray",
+                "BDRip" to "bluray",
+                "BRRip" to "bluray",
+                "REMUX" to "bluray",
+                "BD25" to "bluray",
+                "BD50" to "bluray",
+                "BDMV" to "bluray",
+                "HDDVD" to "hddvd",
+                "HD-DVD" to "hddvd",
+                "HD DVD" to "hddvd",
+                "DVD" to "dvd",
+                "DVDRip" to "dvd",
+                "SDTV" to "sdtv",
+                "SD-TV" to "sdtv",
+                "PDTV" to "sdtv",
+                "HDTV" to "hdtv",
+                "DSR" to "hdtv",
+            )
+        for ((tag, artwork) in cases) {
+            assertEquals(tag, "source/$artwork", MediaFlags.source(null, itemPath = "/Movies/Film [1080p][$tag].mkv")?.artwork)
+        }
+        assertEquals("source/dvd", MediaFlags.source(null, itemPath = "/Movies/Film/VIDEO_TS.IFO")?.artwork)
+        assertEquals("source/dvd", MediaFlags.source(null, itemPath = "/Movies/Film.ISO")?.artwork)
+    }
+
+    @Test fun uhdSourceRequiresBothResolutionAndDiscEvidence() {
+        for (resolution in listOf("4K", "2160P", "UHD", "UltraHD", "Ultra HD")) {
+            for (disc in listOf("remux", "BluRay", "blu-ray", "BDRip", "BRRip", "BDMV", "BD66", "BD100")) {
+                assertEquals(
+                    "$resolution $disc",
+                    "source/ultrahd",
+                    MediaFlags.source(null, itemPath = "/Movies/Film [$resolution][$disc].mkv")?.artwork,
+                )
+            }
+        }
+        val croppedUhd = stream.copy(width = 3840, height = 1600)
+        assertEquals("source/ultrahd", MediaFlags.source(null, croppedUhd, "/Movies/Film [Remux].mkv")?.artwork)
+        assertEquals("source/web-dl", MediaFlags.source(null, croppedUhd, "/Movies/Film [WEB-DL].mkv")?.artwork)
+        assertNull(MediaFlags.source(null, croppedUhd, "/Movies/Film [2160p][HEVC][Atmos].mkv"))
+        assertNull(MediaFlags.source(null))
+    }
+
+    @Test fun sourcePriorityMatchesAf3() {
+        assertEquals("source/ultrahd", MediaFlags.source(null, itemPath = "/4K Remux/Film [WEB-DL].mkv")?.artwork)
+        assertEquals("source/webtv", MediaFlags.source(null, itemPath = "/Movies/Film [WebTV][WEB-DL].mkv")?.artwork)
+        assertEquals("source/web-dl", MediaFlags.source(null, itemPath = "/Movies/Film [WEB-DL][REMUX].mkv")?.artwork)
+        assertEquals("source/hddvd", MediaFlags.source(null, itemPath = "/Movies/Film [HD DVD][REMUX].mkv")?.artwork)
+        assertEquals("source/sdtv", MediaFlags.source(null, itemPath = "/Movies/Film [PDTV][DSR].mkv")?.artwork)
+    }
+
+    @Test fun selectedSourcePathOverridesDefaultAndExplicitDiscTypesStillWork() {
+        val source = TestTracks.Builder().buildMediaSourceInfo()
+        assertEquals(
+            "source/web-dl",
+            MediaFlags.source(source.copy(path = "/Movies/Film [WEB-DL].mkv"), itemPath = "/Movies/Film [BluRay].mkv")?.artwork,
+        )
+        assertEquals("source/bluray", MediaFlags.source(source.copy(path = ""), itemPath = "/BluRay/Film.mkv")?.artwork)
+        assertEquals("source/bluray", MediaFlags.source(source.copy(videoType = VideoType.BLU_RAY))?.artwork)
+        assertEquals(
+            "source/ultrahd",
+            MediaFlags.source(source.copy(videoType = VideoType.BLU_RAY), stream.copy(width = 3840, height = 2160))?.artwork,
+        )
+        assertEquals("source/dvd", MediaFlags.source(source.copy(videoType = VideoType.DVD))?.artwork)
+    }
+
 }
