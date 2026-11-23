@@ -20,6 +20,8 @@ env:
 
 jobs:
   build:
+    # FEL builds use the Fire TV flavor and are published separately.
+    if: github.repository == 'damontecres/Wholphin'
     runs-on: ubuntu-latest
     permissions:
       contents: write
