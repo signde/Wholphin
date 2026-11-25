@@ -80,7 +80,7 @@ fun MovieDetailsHeader(
                 modifier =
                     Modifier.padding(
                         start = HeaderUtils.startPadding,
-                        top = if (LocalInterfaceCustomization.current.coloredMediaIcons) 0.dp else 4.dp,
+                        top = if (LocalInterfaceCustomization.current.showMediaIcons) 0.dp else 4.dp,
                         bottom = 16.dp,
                     ),
             )

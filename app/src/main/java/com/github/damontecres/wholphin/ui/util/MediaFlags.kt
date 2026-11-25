@@ -14,6 +14,8 @@ data class MediaFlag(
 )
 
 object MediaFlags {
+    private val auro3d = Regex("auro[- _]?3d", RegexOption.IGNORE_CASE)
+
     private fun flag(
         key: String,
         label: String,
@@ -126,6 +128,7 @@ object MediaFlags {
                 when {
                     atmos -> "atmos"
                     dtsx -> "dtsx"
+                    auro3d.containsMatchIn(profile) || auro3d.containsMatchIn(codec) || auro3d.containsMatchIn(stream.title.orEmpty()) -> "auro-3d"
                     profile.contains("DTS", true) && profile.contains("MA", true) -> "dtshd_ma"
                     profile.contains("DTS", true) && (profile.contains("HRA", true) || profile.contains("HD H", true)) -> "dtshd_hra"
                     codec.startsWith("pcm_") -> "pcm"
@@ -140,6 +143,7 @@ object MediaFlags {
                 when {
                     atmos -> "Dolby Atmos"
                     dtsx -> "DTS:X"
+                    key == "auro-3d" -> "Auro-3D"
                     profile.isNotBlank() -> profile
                     else -> codec.uppercase()
                 }

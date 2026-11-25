@@ -77,7 +77,7 @@ fun CollectionFolderViewScope.CollectionFolderGrid(
             val defaultBringIntoViewSpec = LocalBringIntoViewSpec.current
             val density = LocalDensity.current
             AnimatedVisibility(viewOptions.showDetails) {
-                val mediaIcons = LocalInterfaceCustomization.current.coloredMediaIcons
+                val mediaIcons = LocalInterfaceCustomization.current.showMediaIcons
                 HomePageHeader(
                     item = focusedItem,
                     showMediaFlags = true,

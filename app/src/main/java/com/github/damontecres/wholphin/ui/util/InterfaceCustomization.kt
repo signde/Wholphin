@@ -1,8 +1,10 @@
 package com.github.damontecres.wholphin.ui.util
 
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.github.damontecres.wholphin.preferences.AppPreference
 import com.github.damontecres.wholphin.preferences.AppPreferences
 import com.github.damontecres.wholphin.preferences.DisplayToggle
+import com.github.damontecres.wholphin.preferences.MediaIconStyle
 import java.util.EnumSet
 
 /**
@@ -10,8 +12,10 @@ import java.util.EnumSet
  */
 data class InterfaceCustomization(
     val enabledDisplayToggles: EnumSet<DisplayToggle>,
-    val coloredMediaIcons: Boolean = true,
+    val mediaIconStyle: MediaIconStyle = MediaIconStyle.ICON_COLOR,
 ) {
+    val showMediaIcons: Boolean get() = mediaIconStyle != MediaIconStyle.ICON_TEXT
+
     constructor(prefs: AppPreferences) : this(
         prefs.interfacePreferences.displayTogglesList.let {
             if (it.isEmpty()) {
@@ -20,7 +24,7 @@ data class InterfaceCustomization(
                 EnumSet.copyOf(it)
             }
         },
-        !prefs.interfacePreferences.hasColoredMediaIcons() || prefs.interfacePreferences.coloredMediaIcons,
+        AppPreference.MediaIcons.getter(prefs),
     )
 }
 

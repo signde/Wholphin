@@ -83,6 +83,13 @@ class VersionCompareTests {
     }
 
     @Test
+    fun testNumberedFelReleaseUsesUpstreamMigrationVersion() {
+        Assert.assertEquals(Version(1, 1, 2), Version.fromString("v1.1.2-fel.2"))
+        Assert.assertEquals(Version(1, 1, 2, 0, "abc1234"), Version.fromString("1.1.2-fel.2-0-gabc1234"))
+        Assert.assertNull(Version.tryFromString("1.1.2-fel."))
+    }
+
+    @Test
     fun testFelVersionsPreserveMigrationThresholds() {
         val fel = Version.fromString("1.1.1-fel-3-gabc1234")
         val upstream = Version.fromString("1.1.1-3-gabc1234")

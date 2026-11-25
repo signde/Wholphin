@@ -198,6 +198,12 @@ enum DisplayToggle{
   COMMUNITY_RATING = 2;
 }
 
+enum MediaIconStyle {
+  ICON_COLOR = 0;
+  ICON_MONOCHROME = 1;
+  ICON_TEXT = 2;
+}
+
 message InterfacePreferences {
   ThemeSongVolume play_theme_songs = 1;
   bool remember_selected_tab = 2;
@@ -214,7 +220,8 @@ message InterfacePreferences {
   bool show_logos = 13;
   SearchPreferences search_preferences = 14;
   repeated DisplayToggle display_toggles = 15;
-  optional bool colored_media_icons = 16;
+  optional bool colored_media_icons = 16; // Read for installs predating the style selector.
+  optional MediaIconStyle media_icon_style = 17;
 }
 
 message AdvancedPreferences {

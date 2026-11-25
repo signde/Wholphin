@@ -69,7 +69,7 @@ fun VideoStreamDetails(
     numberOfVersions: Int = 0,
     modifier: Modifier = Modifier,
 ) {
-    if (com.github.damontecres.wholphin.ui.util.LocalInterfaceCustomization.current.coloredMediaIcons) {
+    if (com.github.damontecres.wholphin.ui.util.LocalInterfaceCustomization.current.showMediaIcons) {
         ColoredMediaStreamDetails(source, videoStream, audioStream, subtitleStream, numberOfVersions, modifier)
         return
     }

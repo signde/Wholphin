@@ -19,6 +19,7 @@ import com.github.damontecres.wholphin.R
 import com.github.damontecres.wholphin.ui.playback.audioStreamCount
 import com.github.damontecres.wholphin.ui.playback.embeddedSubtitleCount
 import com.github.damontecres.wholphin.ui.playback.externalSubtitlesCount
+import com.github.damontecres.wholphin.ui.util.LocalInterfaceCustomization
 import com.github.damontecres.wholphin.ui.util.MediaFlags
 import com.github.damontecres.wholphin.ui.util.StreamFormatting
 import com.github.damontecres.wholphin.ui.util.mediaFlagResources
@@ -35,6 +36,7 @@ fun ColoredMediaStreamDetails(
     numberOfVersions: Int,
     modifier: Modifier = Modifier,
 ) {
+    val style = LocalInterfaceCustomization.current.mediaIconStyle
     val flags =
         remember(source, video, audio) {
             listOfNotNull(MediaFlags.source(source, video)) + MediaFlags.video(video) + MediaFlags.audio(audio)
@@ -46,7 +48,7 @@ fun ColoredMediaStreamDetails(
             itemVerticalAlignment = Alignment.CenterVertically,
         ) {
             flags.forEach { flag ->
-                val resource = flag.artwork?.let(mediaFlagResources::get)
+                val resource = mediaFlagResources[flag.artwork]?.resource(style)
                 if (resource == null) {
                     StreamLabel(flag.label)
                 } else {

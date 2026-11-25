@@ -579,14 +579,23 @@ sealed interface AppPreference<Pref, T> {
                 summaryOff = R.string.disabled,
             )
 
-        val ColoredMediaIcons =
-            AppSwitchPreference<AppPreferences>(
-                title = R.string.colored_media_icons,
-                defaultValue = true,
-                getter = { !it.interfacePreferences.hasColoredMediaIcons() || it.interfacePreferences.coloredMediaIcons },
-                setter = { prefs, value -> prefs.updateInterfacePreferences { coloredMediaIcons = value } },
-                summaryOn = R.string.colored_media_icons_on,
-                summaryOff = R.string.colored_media_icons_off,
+        val MediaIcons =
+            AppChoicePreference<AppPreferences, MediaIconStyle>(
+                title = R.string.media_icons,
+                defaultValue = MediaIconStyle.ICON_COLOR,
+                getter = {
+                    with(it.interfacePreferences) {
+                        when {
+                            hasMediaIconStyle() && mediaIconStyle != MediaIconStyle.UNRECOGNIZED -> mediaIconStyle
+                            hasColoredMediaIcons() && !coloredMediaIcons -> MediaIconStyle.ICON_TEXT
+                            else -> MediaIconStyle.ICON_COLOR
+                        }
+                    }
+                },
+                setter = { prefs, value -> prefs.updateInterfacePreferences { mediaIconStyle = value } },
+                displayValues = R.array.media_icon_styles,
+                indexToValue = { MediaIconStyle.forNumber(it) },
+                valueToIndex = { it.number },
             )
 
         val DisplayTogglesPref =
@@ -1319,7 +1328,7 @@ val advancedPreferences =
                         AppPreference.ShowClock,
                         AppPreference.BackdropStylePref,
                         AppPreference.ShowLogos,
-                        AppPreference.ColoredMediaIcons,
+                        AppPreference.MediaIcons,
                         AppPreference.ManageMedia,
                         AppPreference.DisplayTogglesPref,
                         // Temporarily disabled, see https://github.com/damontecres/Wholphin/pull/127#issuecomment-3478058418

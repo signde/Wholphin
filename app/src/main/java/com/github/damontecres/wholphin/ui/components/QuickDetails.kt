@@ -25,6 +25,7 @@ import androidx.tv.material3.Text
 import com.github.damontecres.wholphin.R
 import com.github.damontecres.wholphin.data.model.QuickDetailsData
 import com.github.damontecres.wholphin.preferences.DisplayToggle
+import com.github.damontecres.wholphin.preferences.MediaIconStyle
 import com.github.damontecres.wholphin.ui.dot
 import com.github.damontecres.wholphin.ui.formatTime
 import com.github.damontecres.wholphin.ui.util.LocalClock
@@ -82,8 +83,10 @@ fun QuickDetailsText(
 }
 
 @Composable
-fun rememberQuickDetailsContentMap(textStyle: TextStyle = MaterialTheme.typography.titleSmall) =
-    remember(textStyle) {
+fun rememberQuickDetailsContentMap(textStyle: TextStyle = MaterialTheme.typography.titleSmall): Map<String, InlineTextContent> {
+    val monochrome = LocalInterfaceCustomization.current.mediaIconStyle == MediaIconStyle.ICON_MONOCHROME
+    return remember(textStyle, monochrome) {
+        val tomatoTint = if (monochrome) Color.White else Color.Unspecified
         mapOf(
             "star" to
                 InlineTextContent(
@@ -95,7 +98,7 @@ fun rememberQuickDetailsContentMap(textStyle: TextStyle = MaterialTheme.typograp
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Star,
-                        tint = FilledStarColor,
+                        tint = if (monochrome) Color.White else FilledStarColor,
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                     )
@@ -112,7 +115,7 @@ fun rememberQuickDetailsContentMap(textStyle: TextStyle = MaterialTheme.typograp
                         painter = painterResource(R.drawable.ic_rotten_tomatoes_rotten),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
-                        tint = Color.Unspecified,
+                        tint = tomatoTint,
                     )
                 },
             "fresh" to
@@ -127,11 +130,12 @@ fun rememberQuickDetailsContentMap(textStyle: TextStyle = MaterialTheme.typograp
                         painter = painterResource(R.drawable.ic_rotten_tomatoes_fresh),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
-                        tint = Color.Unspecified,
+                        tint = tomatoTint,
                     )
                 },
         )
     }
+}
 
 @Composable
 fun TimeRemaining(

@@ -294,7 +294,7 @@ fun HomePageContent(
     takeFocus: Boolean = true,
     showEmptyRows: Boolean = false,
     headerComposable: @Composable (focusedItem: BaseItem?) -> Unit = { focusedItem ->
-        val mediaIcons = LocalInterfaceCustomization.current.coloredMediaIcons
+        val mediaIcons = LocalInterfaceCustomization.current.showMediaIcons
         HomePageHeader(
             item = focusedItem,
             showLogo = showLogo,

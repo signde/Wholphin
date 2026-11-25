@@ -13,12 +13,13 @@ Profile 7 FEL and MEL playback on Fire TV Cube 3 using the Fire TV AV Magisk mod
 - TrueHD and DTS-HD seek recovery on Cube 3, with fresh audio sessions to avoid
   stale playback counters and smaller DTS-HD buffers to prevent allocation failures.
 - Dolby Vision profile and FEL/MEL labels from Jellyfin metadata.
-- Signde’s colored media icons in title details, Recommended rows, and library
-  views with **Show details** enabled. The **Colored media icons** option is on by
-  default under Settings → Advanced → Interface. Dolby Vision icons are green for
-  P7 FEL, tangerine for P7 MEL, and white for other profiles.
+- Signde’s media icons appear in title details, Recommended rows, and library views
+  with **Show details** enabled. Under **Settings → Advanced → Interface → Media icons**,
+  choose **Color** (default), **Monochrome**, or **Text labels**. In color, Dolby
+  Vision icons are green for P7 FEL, tangerine for P7 MEL, and white for other profiles. Monochrome also
+  displays the rating star and Rotten Tomatoes icons in white.
 
-FEL/MEL labels and their colored icons require the optional
+FEL/MEL labels and their profile-specific icons require the optional
 [HDR Metadata server plugin](https://github.com/signde/jellyfin-plugin-hdr-metadata).
 The plugin is not required for FEL playback.
 
@@ -26,7 +27,7 @@ The plugin is not required for FEL playback.
 
 - Fire TV Cube 3 (Gazelle), rooted with Magisk and a compatible
   [Fire TV AV module](https://github.com/signde/firetv-passthrough/releases).
-  Check your exact firmware build against the [supported firmware list](https://github.com/signde/firetv-passthrough/blob/v0.2.4/README.md#supported-firmware).
+  Check your exact firmware build against the [supported firmware list](https://github.com/signde/firetv-passthrough#supported-firmware).
 - A Dolby Vision-capable display. Lossless audio passthrough also requires a
   compatible HDMI audio system.
 - Jellyfin server **12.4.0** used for testing. Other server versions have

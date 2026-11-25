@@ -58,7 +58,8 @@ fun LibraryMediaDetails(
     timeRemaining: Duration?,
     modifier: Modifier = Modifier,
 ) {
-    val enabled = LocalInterfaceCustomization.current.coloredMediaIcons
+    val customization = LocalInterfaceCustomization.current
+    val enabled = customization.showMediaIcons
     val isVideo = item.type in listOf(BaseItemKind.MOVIE, BaseItemKind.EPISODE, BaseItemKind.VIDEO, BaseItemKind.MUSIC_VIDEO)
     val viewModel: LibraryMediaDetailsViewModel = hiltViewModel()
     // Browse requests include streams, so changing focus can render the new badges immediately.
@@ -73,7 +74,7 @@ fun LibraryMediaDetails(
     }
     val data = if (enabled && isVideo) inlineData ?: fetchedData?.takeIf { it.id == item.id } else null
     val flags =
-        remember(data, item.id) {
+        remember(data, item.id, customization.mediaIconStyle) {
             val current = data?.takeIf { it.id == item.id }
             val source = current?.mediaSources?.firstOrNull()
             val streams = source?.mediaStreams ?: current?.mediaStreams.orEmpty()
@@ -81,7 +82,7 @@ fun LibraryMediaDetails(
             val audioStreams = streams.filter { it.type == MediaStreamType.AUDIO }
             val audio = audioStreams.firstOrNull { it.isDefault } ?: audioStreams.firstOrNull()
             (listOfNotNull(MediaFlags.source(source, video, current?.path)) + MediaFlags.video(video) + MediaFlags.audio(audio))
-                .mapNotNull { flag -> flag.artwork?.let(mediaFlagResources::get)?.let { it to flag.label } }
+                .mapNotNull { flag -> mediaFlagResources[flag.artwork]?.resource(customization.mediaIconStyle)?.let { it to flag.label } }
         }
     Column(verticalArrangement = Arrangement.spacedBy(3.dp), modifier = modifier) {
         QuickDetails(

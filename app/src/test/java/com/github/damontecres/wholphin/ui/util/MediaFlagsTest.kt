@@ -3,6 +3,7 @@ package com.github.damontecres.wholphin.ui.util
 import com.github.damontecres.wholphin.preferences.AppPreference
 import com.github.damontecres.wholphin.preferences.AppPreferences
 import com.github.damontecres.wholphin.preferences.InterfacePreferences
+import com.github.damontecres.wholphin.preferences.MediaIconStyle
 import com.github.damontecres.wholphin.test.TestTracks
 import org.jellyfin.sdk.model.api.AudioSpatialFormat
 import org.jellyfin.sdk.model.api.MediaStream
@@ -10,7 +11,6 @@ import org.jellyfin.sdk.model.api.MediaStreamType
 import org.jellyfin.sdk.model.api.VideoRangeType
 import org.jellyfin.sdk.model.api.VideoType
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -89,12 +89,23 @@ class MediaFlagsTest {
         )
     }
 
-    @Test fun existingInstallsDefaultOnAndExplicitOffPersists() {
+    @Test fun explicitAuroTrackTitleSelectsAuroArtwork() {
+        val track = stream.copy(type = MediaStreamType.AUDIO, codec = "dts", profile = "DTS-HD MA", title = "English Auro-3D")
+        assertEquals(MediaFlag("audio/auro-3d", "Auro-3D"), MediaFlags.audio(track).first())
+        assertEquals("audio/dtshd_ma", MediaFlags.audio(track.copy(title = null)).first().artwork)
+    }
+
+    @Test fun iconStylePreservesExistingChoices() {
         val original = AppPreferences.getDefaultInstance()
-        assertTrue(AppPreference.ColoredMediaIcons.getter(original))
-        val disabled = original.toBuilder().setInterfacePreferences(InterfacePreferences.newBuilder().setColoredMediaIcons(false)).build()
-        assertFalse(AppPreference.ColoredMediaIcons.getter(disabled))
-        assertFalse(InterfaceCustomization(AppPreferences.parseFrom(disabled.toByteArray())).coloredMediaIcons)
+        assertEquals(MediaIconStyle.ICON_COLOR, InterfaceCustomization(original).mediaIconStyle)
+        for (enabled in listOf(false, true)) {
+            val legacy = original.toBuilder().setInterfacePreferences(InterfacePreferences.newBuilder().setColoredMediaIcons(enabled)).build()
+            assertEquals(enabled, InterfaceCustomization(legacy).showMediaIcons)
+            for (style in listOf(MediaIconStyle.ICON_COLOR, MediaIconStyle.ICON_MONOCHROME, MediaIconStyle.ICON_TEXT)) {
+                val updated = AppPreference.MediaIcons.setter(legacy, style)
+                assertEquals(style, InterfaceCustomization(AppPreferences.parseFrom(updated.toByteArray())).mediaIconStyle)
+            }
+        }
     }
 
     @Test fun sourceQualityUsesAf3TagsAndArtwork() {

@@ -3,7 +3,7 @@ package com.github.damontecres.wholphin.util
 import kotlinx.serialization.Serializable
 
 /**
- * Represents a version in the format of `<major>.<minor>.<patch>-<numCommits>-g<gitSha>` as output by `git describe`, with an optional `-fel` tag suffix
+ * Represents a version in the format of `<major>.<minor>.<patch>-<numCommits>-g<gitSha>` as output by `git describe`, with an optional FEL tag suffix (e.g. `-fel` or `-fel.2`)
  */
 @Serializable
 data class Version(
@@ -77,7 +77,7 @@ data class Version(
         }
 
     companion object {
-        private val VERSION_REGEX = Regex("v?(\\d+)\\.(\\d+)\\.(\\d+)(?:-fel)?(-(\\d+)-g([a-zA-Z0-9]+))?")
+        private val VERSION_REGEX = Regex("v?(\\d+)\\.(\\d+)\\.(\\d+)(?:-fel(?:\\.[1-9]\\d*)?)?(-(\\d+)-g([a-zA-Z0-9]+))?")
 
         /**
          * Parse a version string throwing if it is invalid
